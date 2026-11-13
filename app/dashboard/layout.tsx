@@ -4,6 +4,7 @@ import { Header } from "@/components/dashboard/header";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { gql } from "@/lib/api";
 import { getSession } from "@/lib/session";
+import { UrqlProvider } from "@/lib/urql/provider";
 
 type MeQuery = {
   me: {
@@ -42,14 +43,16 @@ export default async function DashboardLayout({
   const email = await getViewerEmail(session.token);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex min-h-screen flex-1 flex-col">
-        <Header email={email} />
-        <div className="flex-1 px-6 py-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+    <UrqlProvider>
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <div className="flex min-h-screen flex-1 flex-col">
+          <Header email={email} />
+          <div className="flex-1 px-6 py-8">
+            <div className="mx-auto w-full max-w-6xl">{children}</div>
+          </div>
         </div>
       </div>
-    </div>
+    </UrqlProvider>
   );
 }
