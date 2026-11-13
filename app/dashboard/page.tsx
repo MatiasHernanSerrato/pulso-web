@@ -1,5 +1,11 @@
+import { ExpenseBreakdown } from "@/components/dashboard/expense-breakdown";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { WeightTrend } from "@/components/dashboard/weight-trend";
+import {
+  fetchExpensesThisMonth,
+  formatArs,
+  totalCents,
+} from "@/lib/queries/expenses";
 import { fetchWeightsLast4Weeks, bucketByWeek } from "@/lib/queries/weights";
 import { getSession } from "@/lib/session";
 
@@ -17,8 +23,20 @@ async function loadWeights() {
   }
 }
 
+async function loadExpenses() {
+  const session = await getSession();
+  if (!session) return [];
+  try {
+    return await fetchExpensesThisMonth(session.token);
+  } catch {
+    return [];
+  }
+}
+
 export default async function DashboardPage() {
-  const points = await loadWeights();
+  // en paralelo, que no se bloqueen entre si
+  const [points, expenses] = await Promise.all([loadWeights(), loadExpenses()]);
+
   const weeks = bucketByWeek(points, 4);
   const lastWithData = [...weeks].reverse().find((w) => w.avgKg !== null);
   const firstWithData = weeks.find((w) => w.avgKg !== null);
@@ -28,6 +46,9 @@ export default async function DashboardPage() {
       : null;
 
   const currentWeight = lastWithData?.avgKg ?? null;
+
+  const spendCents = totalCents(expenses);
+  const topCategory = expenses[0];
 
   return (
     <div className="flex flex-col gap-8">
@@ -57,15 +78,20 @@ export default async function DashboardPage() {
           }
           hint={delta !== null ? "vs primera semana" : "necesito 2 mediciones"}
         />
-        <MetricCard label="Gasto del mes" value="--" hint="conecta tu banco" />
+        <MetricCard
+          label="Gasto del mes"
+          value={spendCents > 0 ? formatArs(spendCents) : "--"}
+          hint={
+            topCategory
+              ? `mayor: ${topCategory.category}`
+              : "conecta tu banco"
+          }
+        />
         <MetricCard label="Anomalias" value="0" hint="todo tranqui" />
       </div>
 
       <WeightTrend points={points} />
-
-      <div className="rounded-xl border bg-card p-8 text-sm text-muted-foreground">
-        Pronto: desglose de gastos por categoria.
-      </div>
+      <ExpenseBreakdown rows={expenses} />
     </div>
   );
 }
