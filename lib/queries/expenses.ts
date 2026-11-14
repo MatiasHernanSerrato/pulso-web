@@ -49,12 +49,17 @@ export async function fetchExpensesThisMonth(
 }
 
 export function formatArs(cents: number): string {
+  // Intl.NumberFormat devuelve espacios NBSP y u202f en algunos runtimes y
+  // espacios normales en otros. En SSR node vs el browser eso daba un
+  // hydration mismatch cuando el formateo se hacia en un client component.
+  // Normalizamos a espacios comunes para que el output sea deterministico.
   const value = cents / 100;
-  return new Intl.NumberFormat("es-AR", {
+  const raw = new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
     maximumFractionDigits: 0,
   }).format(value);
+  return raw.replace(/[   ]/g, " ");
 }
 
 export function totalCents(rows: ExpenseByCategory[]): number {

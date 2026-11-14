@@ -2,10 +2,14 @@ import { bucketByWeek, type WeightPoint } from "@/lib/queries/weights";
 
 type WeightTrendProps = {
   points: WeightPoint[];
+  // now viene desde el server para que el bucket y los labels no cambien si
+  // este componente llega a re-renderizarse en el cliente a otro ms.
+  nowIso: string;
 };
 
-export function WeightTrend({ points }: WeightTrendProps) {
-  const weeks = bucketByWeek(points, 4);
+export function WeightTrend({ points, nowIso }: WeightTrendProps) {
+  const now = new Date(nowIso);
+  const weeks = bucketByWeek(points, 4, now);
   const validWeeks = weeks.filter((w) => w.avgKg !== null);
 
   if (validWeeks.length === 0) {
@@ -27,7 +31,6 @@ export function WeightTrend({ points }: WeightTrendProps) {
   const max = Math.max(...values);
   const range = max - min || 1;
 
-  // SVG geometry: viewBox 400x120, 40px padding lateral, 20 top/bottom
   const vbW = 400;
   const vbH = 120;
   const padX = 40;

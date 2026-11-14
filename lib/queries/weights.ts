@@ -38,8 +38,13 @@ export function startOfWeek(date: Date): Date {
   return d;
 }
 
-export function bucketByWeek(points: WeightPoint[], weeks = 4): WeekBucket[] {
-  const now = new Date();
+export function bucketByWeek(
+  points: WeightPoint[],
+  weeks = 4,
+  now: Date = new Date(),
+): WeekBucket[] {
+  // now entra por param para que el server pueda pre-calcular y pasar el
+  // mismo valor a cualquier chart client, evitando mismatch de hydration.
   const currentWeekStart = startOfWeek(now);
 
   const buckets: WeekBucket[] = [];

@@ -37,7 +37,9 @@ export default async function DashboardPage() {
   // en paralelo, que no se bloqueen entre si
   const [points, expenses] = await Promise.all([loadWeights(), loadExpenses()]);
 
-  const weeks = bucketByWeek(points, 4);
+  // snapshot de now para que server y client coincidan en el bucket y labels
+  const now = new Date();
+  const weeks = bucketByWeek(points, 4, now);
   const lastWithData = [...weeks].reverse().find((w) => w.avgKg !== null);
   const firstWithData = weeks.find((w) => w.avgKg !== null);
   const delta =
@@ -90,7 +92,7 @@ export default async function DashboardPage() {
         <MetricCard label="Anomalias" value="0" hint="todo tranqui" />
       </div>
 
-      <WeightTrend points={points} />
+      <WeightTrend points={points} nowIso={now.toISOString()} />
       <ExpenseBreakdown rows={expenses} />
     </div>
   );

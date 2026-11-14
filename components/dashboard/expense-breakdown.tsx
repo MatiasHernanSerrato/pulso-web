@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import {
   colorFor,
   formatArs,
@@ -10,6 +14,8 @@ type ExpenseBreakdownProps = {
 };
 
 export function ExpenseBreakdown({ rows }: ExpenseBreakdownProps) {
+  const [hover, setHover] = useState<string | null>(null);
+
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-6">
@@ -24,7 +30,6 @@ export function ExpenseBreakdown({ rows }: ExpenseBreakdownProps) {
   }
 
   const total = totalCents(rows);
-  // barras apiladas horizontales (stacked bar chart) + lista de categorias
   let offset = 0;
   const segments = rows.map((r) => {
     const w = (r.totalCents / total) * 100;
@@ -58,7 +63,10 @@ export function ExpenseBreakdown({ rows }: ExpenseBreakdownProps) {
             <div
               key={s.cat}
               style={{ width: `${s.w}%`, backgroundColor: s.color }}
-              className="h-full"
+              onMouseEnter={() => setHover(s.cat)}
+              onMouseLeave={() => setHover(null)}
+              className="h-full transition-opacity"
+              data-active={hover === null || hover === s.cat}
               title={`${s.cat} ${s.w.toFixed(1)}%`}
             />
           ))}
@@ -68,10 +76,14 @@ export function ExpenseBreakdown({ rows }: ExpenseBreakdownProps) {
       <ul className="mt-6 flex flex-col divide-y divide-border">
         {rows.map((r) => {
           const pct = (r.totalCents / total) * 100;
+          const active = hover === null || hover === r.category;
           return (
             <li
               key={r.category}
-              className="flex items-center justify-between py-3 text-sm"
+              onMouseEnter={() => setHover(r.category)}
+              onMouseLeave={() => setHover(null)}
+              className="flex items-center justify-between py-3 text-sm transition-opacity"
+              style={{ opacity: active ? 1 : 0.4 }}
             >
               <div className="flex items-center gap-3">
                 <span
