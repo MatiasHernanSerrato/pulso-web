@@ -1,6 +1,7 @@
 import { AnomaliesWidget } from "@/components/dashboard/anomalies-widget";
-import { ExpenseBreakdown } from "@/components/dashboard/expense-breakdown";
+import { ExpenseDonut } from "@/components/dashboard/expense-donut";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { WeeklySpendChart } from "@/components/dashboard/weekly-spend";
 import { WeightTrend } from "@/components/dashboard/weight-trend";
 import { fetchAnomaliesLast30Days } from "@/lib/queries/anomalies";
 import {
@@ -8,6 +9,7 @@ import {
   formatArs,
   totalCents,
 } from "@/lib/queries/expenses";
+import { fetchWeeklySpendLast6Weeks } from "@/lib/queries/weekly-spend";
 import { fetchWeightsLast4Weeks, bucketByWeek } from "@/lib/queries/weights";
 import { getSession } from "@/lib/session";
 
@@ -45,12 +47,23 @@ async function loadAnomalies() {
   }
 }
 
+async function loadWeeklySpend() {
+  const session = await getSession();
+  if (!session) return [];
+  try {
+    return await fetchWeeklySpendLast6Weeks(session.token);
+  } catch {
+    return [];
+  }
+}
+
 export default async function DashboardPage() {
   // en paralelo, que no se bloqueen entre si
-  const [points, expenses, anomalies] = await Promise.all([
+  const [points, expenses, anomalies, weeklySpend] = await Promise.all([
     loadWeights(),
     loadExpenses(),
     loadAnomalies(),
+    loadWeeklySpend(),
   ]);
 
   // snapshot de now para que server y client coincidan en el bucket y labels
@@ -122,7 +135,10 @@ export default async function DashboardPage() {
         anomalies={anomalies}
         nowIso={now.toISOString()}
       />
-      <ExpenseBreakdown rows={expenses} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <WeeklySpendChart rows={weeklySpend} nowIso={now.toISOString()} />
+        <ExpenseDonut rows={expenses} />
+      </div>
     </div>
   );
 }
