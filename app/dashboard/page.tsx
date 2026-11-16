@@ -1,6 +1,8 @@
+import { AnomaliesWidget } from "@/components/dashboard/anomalies-widget";
 import { ExpenseBreakdown } from "@/components/dashboard/expense-breakdown";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { WeightTrend } from "@/components/dashboard/weight-trend";
+import { fetchAnomaliesLast30Days } from "@/lib/queries/anomalies";
 import {
   fetchExpensesThisMonth,
   formatArs,
@@ -33,9 +35,23 @@ async function loadExpenses() {
   }
 }
 
+async function loadAnomalies() {
+  const session = await getSession();
+  if (!session) return [];
+  try {
+    return await fetchAnomaliesLast30Days(session.token);
+  } catch {
+    return [];
+  }
+}
+
 export default async function DashboardPage() {
   // en paralelo, que no se bloqueen entre si
-  const [points, expenses] = await Promise.all([loadWeights(), loadExpenses()]);
+  const [points, expenses, anomalies] = await Promise.all([
+    loadWeights(),
+    loadExpenses(),
+    loadAnomalies(),
+  ]);
 
   // snapshot de now para que server y client coincidan en el bucket y labels
   const now = new Date();
@@ -89,11 +105,31 @@ export default async function DashboardPage() {
               : "conecta tu banco"
           }
         />
-        <MetricCard label="Anomalias" value="0" hint="todo tranqui" />
+        <MetricCard
+          label="Anomalias"
+          value={String(anomalies.length)}
+          hint={
+            anomalies.length === 0
+              ? "todo tranqui"
+              : `ultima: ${formatAnomalyDate(anomalies[0].detectedAt)}`
+          }
+        />
       </div>
 
       <WeightTrend points={points} nowIso={now.toISOString()} />
+      <AnomaliesWidget
+        points={points}
+        anomalies={anomalies}
+        nowIso={now.toISOString()}
+      />
       <ExpenseBreakdown rows={expenses} />
     </div>
   );
+}
+
+function formatAnomalyDate(iso: string): string {
+  const d = new Date(iso);
+  const day = d.getUTCDate();
+  const month = d.getUTCMonth() + 1;
+  return `${day < 10 ? `0${day}` : day}/${month < 10 ? `0${month}` : month}`;
 }
