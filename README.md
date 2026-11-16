@@ -25,3 +25,12 @@ Abre en http://localhost:3000.
 ## Env
 
 Copia `.env.example` a `.env.local` y cambia lo que haga falta. Por ahora solo esta la URL del GraphQL del backend.
+
+## Deploy
+
+Esta configurado para Vercel. En el dashboard del proyecto hay que setear:
+
+- `NEXT_PUBLIC_API_URL`: URL del GraphQL del backend (public, va al bundle)
+- `API_URL`: misma URL pero sin `/graphql` al final, para los rewrites de server
+
+El `vercel.json` ya tiene los headers de seguridad basicos y el region fijado en gru1 (Sao Paulo) para quedar cerca del backend en fly.
