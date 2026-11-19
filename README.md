@@ -4,6 +4,23 @@ El frontend web de Pulso. Dashboard para ver el peso, los gastos y las anomalias
 
 Parte del proyecto Pulso: [pulso-api](https://github.com/MatiasHernanSerrato/pulso-api) (Go + GraphQL) y [pulso-mobile](https://github.com/MatiasHernanSerrato/pulso-mobile) (Flutter).
 
+![next](https://img.shields.io/badge/next.js-15-black)
+![react](https://img.shields.io/badge/react-19-61DAFB)
+![tailwind](https://img.shields.io/badge/tailwind-v4-38B2AC)
+![typescript](https://img.shields.io/badge/typescript-5.6-3178C6)
+![vercel](https://img.shields.io/badge/deploy-vercel-000000)
+
+## Indice
+
+- [Pantallas](#pantallas)
+- [Stack](#stack)
+- [Estructura](#estructura)
+- [Correrlo](#correrlo)
+- [Env](#env)
+- [Deploy](#deploy)
+- [Healthchecks](#healthchecks)
+- [SEO](#seo)
+
 ## Pantallas
 
 <p align="center">
@@ -22,9 +39,35 @@ El layout es responsive pero el dashboard real brilla desde 1024 px para arriba,
 - Next.js 15 con App Router y Server Components
 - React 19
 - Tailwind v4 (sin config, todo en css)
-- TypeScript
+- TypeScript 5.6 con `moduleResolution: bundler`
+- shadcn/ui para primitivos (Dialog, Dropdown, Tabs)
+- Visx para graficos (el area chart y el pie chart del dashboard)
+- urql como cliente de GraphQL, con codegen para los hooks tipados
 
-Estoy probando el motor nuevo de Tailwind v4. Tiene algunos bugs todavia pero el DX me cierra.
+Estoy probando el motor nuevo de Tailwind v4. Tiene algunos bugs todavia pero el DX me cierra: cero configuracion y los tokens de color viven directo en `@theme` en el CSS.
+
+## Estructura
+
+```
+app/
+  layout.tsx            ; root layout + ThemeProvider
+  globals.css           ; @theme + variables de tailwind v4
+  page.tsx              ; landing (redirige a /dashboard si hay cookie)
+  login/                ; server action que setea la cookie pulso_session
+  dashboard/            ; /resumen /salud /finanzas con layout compartido
+  healthz/route.ts      ; endpoint para uptime checks
+  robots.ts             ; noindex en previews, index en prod
+  sitemap.ts            ; solo en prod
+  api/graphql/          ; proxy del endpoint para no exponer la URL cruda
+components/
+  ui/                   ; shadcn primitives
+  dashboard/            ; cards, charts, sidebar
+  theme-provider.tsx
+lib/
+  urql/                 ; client factory + ssr cache
+  queries/              ; graphql documents + types generados
+middleware.ts           ; valida la cookie de session en rutas /dashboard
+```
 
 ## Correrlo
 
