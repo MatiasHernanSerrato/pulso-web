@@ -45,7 +45,16 @@ Copia `.env.example` a `.env.local` y cambia lo que haga falta. Por ahora solo e
 
 Esta configurado para Vercel. En el dashboard del proyecto hay que setear:
 
-- `NEXT_PUBLIC_API_URL`: URL del GraphQL del backend (public, va al bundle)
-- `API_URL`: misma URL pero sin `/graphql` al final, para los rewrites de server
+- `NEXT_PUBLIC_API_URL`: URL del GraphQL del backend (public, va al bundle). En prod, `https://pulso-api.fly.dev/graphql`.
+- `API_URL`: misma URL pero sin `/graphql` al final, para los rewrites de server. En prod, `https://pulso-api.fly.dev`.
 
 El `vercel.json` ya tiene los headers de seguridad basicos y el region fijado en gru1 (Sao Paulo) para quedar cerca del backend en fly.
+
+### Healthchecks
+
+- `/healthz` devuelve `{status, service, commit, region}` sin pegarle a la api. Me sirve para los uptime checks y para que Vercel pueda monitorearlo.
+- `/status` es un alias por rewrite, por si alguien busca el path ese.
+
+### SEO
+
+Los preview deploys (`VERCEL_ENV !== "production"`) devuelven `X-Robots-Tag: noindex` via `app/robots.ts` y el metadata del layout, asi no terminan rankeando antes que la prod. El sitemap solo se publica cuando `VERCEL_ENV === "production"`.
