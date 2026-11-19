@@ -2,6 +2,21 @@
 
 El frontend web de Pulso. Dashboard para ver el peso, los gastos y las anomalias que el backend detecta, con graficos lindos.
 
+Parte del proyecto Pulso: [pulso-api](https://github.com/MatiasHernanSerrato/pulso-api) (Go + GraphQL) y [pulso-mobile](https://github.com/MatiasHernanSerrato/pulso-mobile) (Flutter).
+
+## Pantallas
+
+<p align="center">
+  <img src="public/screenshots/resumen.png" alt="dashboard resumen" width="720" />
+</p>
+
+<p align="center">
+  <img src="public/screenshots/salud.png" alt="detalle salud" width="360" />
+  <img src="public/screenshots/plata.png" alt="detalle finanzas" width="360" />
+</p>
+
+El layout es responsive pero el dashboard real brilla desde 1024 px para arriba, que es donde agregamos la sidebar fija y los graficos crecen al ancho que necesitan. En mobile se vuelve una columna con las cards apiladas.
+
 ## Stack
 
 - Next.js 15 con App Router y Server Components
